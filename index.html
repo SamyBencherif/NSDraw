@@ -79,133 +79,105 @@
     const EXAMPLES = [
       '001-hello-world.js',
       'circles.js',
-      'clock.js'
+      'clock.js',
     ];
-
-    function renderExamples() {
-      const container = document.getElementById('examples-content');
-      container.innerHTML = '';
-      for (const file of EXAMPLES) {
-        const path = `examples/${file}`;
-        const row = document.createElement('div');
-        row.className = 'tree-file';
-        row.dataset.example = path;
-        row.innerHTML = `<span class="file-icon">○</span><span class="file-name">${escapeHtml(file)}</span>`;
-        row.addEventListener('click', () => openExample(path));
-        container.appendChild(row);
-      }
-    }
 
     // ── NSDraw library source (fetched once) ──
     let nsdrawSrc = '';
     fetch('nsdraw.js').then(r => r.text()).then(src => { nsdrawSrc = src; });
 
     // ── File system state ──
-    // userFiles: { [name]: content }
     let userFiles = JSON.parse(localStorage.getItem('nsdraw_files') || '{}');
-    // currentFile: { type: 'example' | 'user', key: string } | null
-    let currentFile = null;
+    let currentKey = null; // key of open file
+
+    function isExample(key) { return key.startsWith('examples/'); }
 
     function saveUserFiles() {
       localStorage.setItem('nsdraw_files', JSON.stringify(userFiles));
     }
 
-    // ── Auto-save user file on editor change ──
+    // ── Auto-save on editor change ──
     editor.session.on('change', () => {
-      if (currentFile?.type === 'user') {
-        userFiles[currentFile.key] = editor.getValue();
+      if (currentKey && !isExample(currentKey)) {
+        userFiles[currentKey] = editor.getValue();
         saveUserFiles();
       }
     });
-
-    // ── Open a file ──
-    function openExample(path) {
-      fetch(path).then(r => r.text()).then(src => {
-        editor.setValue(src, -1);
-        currentFile = { type: 'example', key: path };
-        renderMyFiles();
-        highlightActive();
-      });
-    }
-
-    function openUserFile(name) {
-      editor.setValue(userFiles[name] ?? '', -1);
-      currentFile = { type: 'user', key: name };
-      renderMyFiles();
-      highlightActive();
-    }
-
-    // ── Highlight active file in sidebar ──
-    function highlightActive() {
-      document.querySelectorAll('.tree-file').forEach(el => {
-        const isExample = el.dataset.example === currentFile?.key;
-        const isUser    = el.dataset.userfile === currentFile?.key;
-        el.classList.toggle('active', isExample || isUser);
-      });
-    }
-
-    // ── Render user files list ──
-    function renderMyFiles() {
-      const container = document.getElementById('myfiles-content');
-      // Keep any in-progress new-file input row
-      const existingInput = container.querySelector('.new-file-row');
-
-      // Remove all user file rows
-      container.querySelectorAll('.tree-file').forEach(el => el.remove());
-
-      // Re-insert file rows before the input row (if present)
-      const names = Object.keys(userFiles).sort();
-      for (const name of names) {
-        const row = document.createElement('div');
-        row.className = 'tree-file';
-        row.dataset.userfile = name;
-        if (currentFile?.type === 'user' && currentFile.key === name) {
-          row.classList.add('active');
-        }
-        row.innerHTML = `
-          <span class="file-icon">○</span>
-          <span class="file-name">${escapeHtml(name)}</span>
-          <button class="delete-btn" title="Delete">×</button>
-        `;
-        row.addEventListener('click', (e) => {
-          if (e.target.classList.contains('delete-btn')) return;
-          openUserFile(name);
-        });
-        row.querySelector('.delete-btn').addEventListener('click', (e) => {
-          e.stopPropagation();
-          deleteUserFile(name);
-        });
-        if (existingInput) {
-          container.insertBefore(row, existingInput);
-        } else {
-          container.appendChild(row);
-        }
-      }
-    }
 
     function escapeHtml(str) {
       return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
-    // ── Delete a user file ──
-    function deleteUserFile(name) {
-      if (!confirm(`Delete "${name}"?`)) return;
-      delete userFiles[name];
-      saveUserFiles();
-      if (currentFile?.type === 'user' && currentFile.key === name) {
-        currentFile = null;
-        editor.setValue('', -1);
+    // ── Shared file-row renderer ──
+    function makeFileRow(key, name, deletable) {
+      const row = document.createElement('div');
+      row.className = 'tree-file';
+      row.dataset.key = key;
+      if (key === currentKey) row.classList.add('active');
+      row.innerHTML = `<span class="file-icon">○</span><span class="file-name">${escapeHtml(name)}</span>`
+        + (deletable ? `<button class="delete-btn" title="Delete">×</button>` : '');
+      row.addEventListener('click', (e) => {
+        if (e.target.classList.contains('delete-btn')) return;
+        openFile(key);
+      });
+      if (deletable) {
+        row.querySelector('.delete-btn').addEventListener('click', (e) => {
+          e.stopPropagation();
+          deleteFile(key);
+        });
       }
-      renderMyFiles();
+      return row;
     }
 
-    // ── New file: show inline input ──
-    document.getElementById('new-file-btn').addEventListener('click', (e) => {
-      e.stopPropagation(); // don't toggle folder collapse
-      const container = document.getElementById('myfiles-content');
-      if (container.querySelector('.new-file-row')) return; // already open
+    // ── Open any file ──
+    function openFile(key) {
+      if (isExample(key)) {
+        fetch(key).then(r => r.text()).then(src => {
+          currentKey = key;
+          editor.setValue(src, -1);
+          renderSidebar();
+        });
+      } else {
+        currentKey = key;
+        editor.setValue(userFiles[key] ?? '', -1);
+        renderSidebar();
+      }
+    }
 
-      // Expand if collapsed
+    // ── Delete a user file ──
+    function deleteFile(key) {
+      if (!confirm(`Delete "${key}"?`)) return;
+      delete userFiles[key];
+      saveUserFiles();
+      if (currentKey === key) { currentKey = null; editor.setValue('', -1); }
+      renderSidebar();
+    }
+
+    // ── Render both folders ──
+    function renderSidebar() {
+      // Examples
+      const exContainer = document.getElementById('examples-content');
+      exContainer.innerHTML = '';
+      for (const file of EXAMPLES) {
+        exContainer.appendChild(makeFileRow(`examples/${file}`, file, false));
+      }
+
+      // My files
+      const myContainer = document.getElementById('myfiles-content');
+      const existingInput = myContainer.querySelector('.new-file-row');
+      myContainer.querySelectorAll('.tree-file').forEach(el => el.remove());
+      for (const name of Object.keys(userFiles).sort()) {
+        const row = makeFileRow(name, name, true);
+        myContainer.insertBefore(row, existingInput ?? null);
+      }
+    }
+
+    // ── New file: inline input ──
+    document.getElementById('new-file-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      const container = document.getElementById('myfiles-content');
+      if (container.querySelector('.new-file-row')) return;
+
       container.classList.remove('collapsed');
       document.getElementById('myfiles-header').classList.remove('collapsed');
 
@@ -224,11 +196,8 @@
         row.remove();
         if (!name) return;
         if (!name.endsWith('.js')) name += '.js';
-        if (userFiles[name] === undefined) {
-          userFiles[name] = '';
-          saveUserFiles();
-        }
-        openUserFile(name);
+        if (userFiles[name] === undefined) { userFiles[name] = ''; saveUserFiles(); }
+        openFile(name);
       }
 
       input.addEventListener('keydown', (e) => {
@@ -236,7 +205,6 @@
         if (e.key === 'Escape') row.remove();
       });
       input.addEventListener('blur', () => {
-        // slight delay so click-outside doesn't fire before commit on Enter
         setTimeout(() => { if (row.parentNode) row.remove(); }, 150);
       });
     });
@@ -248,16 +216,14 @@
     });
 
     document.getElementById('myfiles-header').addEventListener('click', (e) => {
-      // Don't collapse when clicking the + button
       if (e.target.closest('.folder-actions')) return;
       document.getElementById('myfiles-header').classList.toggle('collapsed');
       document.getElementById('myfiles-content').classList.toggle('collapsed');
     });
 
     // ── Initial render ──
-    renderExamples();
-    renderMyFiles();
-    openExample("examples/001-hello-world.js"); 
+    renderSidebar();
+    openFile('examples/001-hello-world.js');
 
     // ── Play button ──
     const playBtn       = document.getElementById('play-btn');
