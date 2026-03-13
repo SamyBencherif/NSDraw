@@ -6,24 +6,50 @@
   <title>NSDraw</title>
   <link rel="stylesheet" href="style.css">
 </head>
-<body style="display:flex;flex-direction:column;height:100vh;">
+<body>
 
   <!-- Toolbar -->
   <div id="toolbar">
     <span class="logo">NSDraw</span>
-    <select id="examples-menu">
-      <option value="">— Examples —</option>
-      <option value="examples/circles.js">Bouncing Circles</option>
-      <option value="examples/clock.js">Analog Clock</option>
-      <option value="examples/grid.js">Color Grid</option>
-      <option value="examples/tree.js">Fractal Tree</option>
-    </select>
     <button id="play-btn">▶ Run</button>
   </div>
 
-  <!-- Editor -->
-  <div id="editor-pane">
-    <div id="ace-editor"></div>
+  <!-- Main -->
+  <div id="main">
+
+    <!-- Sidebar -->
+    <div id="sidebar">
+
+      <!-- Examples folder (populated from EXAMPLES array in script) -->
+      <div class="tree-section">
+        <div class="tree-folder-header" id="examples-header">
+          <span class="arrow">▾</span>
+          <span>examples</span>
+        </div>
+        <div class="tree-folder-content" id="examples-content"></div>
+      </div>
+
+      <!-- My files folder -->
+      <div class="tree-section">
+        <div class="tree-folder-header" id="myfiles-header">
+          <span class="arrow">▾</span>
+          <span>my files</span>
+          <div class="folder-actions">
+            <button class="folder-action-btn" id="new-file-btn" title="New file">+</button>
+          </div>
+        </div>
+        <div class="tree-folder-content" id="myfiles-content">
+          <!-- user file rows rendered here -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Editor -->
+    <div id="editor-pane">
+      <div id="ace-editor"></div>
+    </div>
+
   </div>
 
   <!-- Runner overlay -->
@@ -45,52 +71,193 @@
       useSoftTabs: true,
     });
 
-    const DEFAULT_CODE = `// Welcome to NSDraw!
-// Use the canvas drawing functions below, then hit ▶ Run.
-//
-// Globals available:
-//   canvas, ctx, W (width), H (height)
-//
-// Functions:
-//   clear({ color })
-//   draw_circle({ x, y, r, fill, stroke, lineWidth })
-//   draw_rect({ x, y, w, h, fill, stroke, lineWidth })
-//   draw_line({ x1, y1, x2, y2, color, lineWidth })
-//   draw_text({ text, x, y, font, fill, align })
-//   draw_poly({ points, fill, stroke, lineWidth })
-//   loop(fn)  — calls fn(dt) every frame (dt = ms since last frame)
-
-clear({ color: '#1e1e2e' });
-
-draw_circle({ x: W / 2, y: H / 2, r: 80, fill: '#cba6f7' });
-
-draw_text({
-  text: 'Hello, NSDraw!',
-  x: W / 2,
-  y: H / 2 + 120,
-  font: 'bold 24px monospace',
-  fill: '#cdd6f4',
-  align: 'center',
-});
-`;
+    const DEFAULT_CODE = ``;
 
     editor.setValue(DEFAULT_CODE, -1);
 
+    // ── Examples — add new entries here ──
+    const EXAMPLES = [
+      '001-hello-world.js',
+      'circles.js',
+      'clock.js'
+    ];
+
+    function renderExamples() {
+      const container = document.getElementById('examples-content');
+      container.innerHTML = '';
+      for (const file of EXAMPLES) {
+        const path = `examples/${file}`;
+        const row = document.createElement('div');
+        row.className = 'tree-file';
+        row.dataset.example = path;
+        row.innerHTML = `<span class="file-icon">○</span><span class="file-name">${escapeHtml(file)}</span>`;
+        row.addEventListener('click', () => openExample(path));
+        container.appendChild(row);
+      }
+    }
+
     // ── NSDraw library source (fetched once) ──
     let nsdrawSrc = '';
-    fetch('nsdraw.js')
-      .then(r => r.text())
-      .then(src => { nsdrawSrc = src; });
+    fetch('nsdraw.js').then(r => r.text()).then(src => { nsdrawSrc = src; });
 
-    // ── Examples menu ──
-    const examplesMenu = document.getElementById('examples-menu');
-    examplesMenu.addEventListener('change', async () => {
-      const path = examplesMenu.value;
-      if (!path) return;
-      const src = await fetch(path).then(r => r.text());
-      editor.setValue(src, -1);
-      examplesMenu.value = '';
+    // ── File system state ──
+    // userFiles: { [name]: content }
+    let userFiles = JSON.parse(localStorage.getItem('nsdraw_files') || '{}');
+    // currentFile: { type: 'example' | 'user', key: string } | null
+    let currentFile = null;
+
+    function saveUserFiles() {
+      localStorage.setItem('nsdraw_files', JSON.stringify(userFiles));
+    }
+
+    // ── Auto-save user file on editor change ──
+    editor.session.on('change', () => {
+      if (currentFile?.type === 'user') {
+        userFiles[currentFile.key] = editor.getValue();
+        saveUserFiles();
+      }
     });
+
+    // ── Open a file ──
+    function openExample(path) {
+      fetch(path).then(r => r.text()).then(src => {
+        editor.setValue(src, -1);
+        currentFile = { type: 'example', key: path };
+        renderMyFiles();
+        highlightActive();
+      });
+    }
+
+    function openUserFile(name) {
+      editor.setValue(userFiles[name] ?? '', -1);
+      currentFile = { type: 'user', key: name };
+      renderMyFiles();
+      highlightActive();
+    }
+
+    // ── Highlight active file in sidebar ──
+    function highlightActive() {
+      document.querySelectorAll('.tree-file').forEach(el => {
+        const isExample = el.dataset.example === currentFile?.key;
+        const isUser    = el.dataset.userfile === currentFile?.key;
+        el.classList.toggle('active', isExample || isUser);
+      });
+    }
+
+    // ── Render user files list ──
+    function renderMyFiles() {
+      const container = document.getElementById('myfiles-content');
+      // Keep any in-progress new-file input row
+      const existingInput = container.querySelector('.new-file-row');
+
+      // Remove all user file rows
+      container.querySelectorAll('.tree-file').forEach(el => el.remove());
+
+      // Re-insert file rows before the input row (if present)
+      const names = Object.keys(userFiles).sort();
+      for (const name of names) {
+        const row = document.createElement('div');
+        row.className = 'tree-file';
+        row.dataset.userfile = name;
+        if (currentFile?.type === 'user' && currentFile.key === name) {
+          row.classList.add('active');
+        }
+        row.innerHTML = `
+          <span class="file-icon">○</span>
+          <span class="file-name">${escapeHtml(name)}</span>
+          <button class="delete-btn" title="Delete">×</button>
+        `;
+        row.addEventListener('click', (e) => {
+          if (e.target.classList.contains('delete-btn')) return;
+          openUserFile(name);
+        });
+        row.querySelector('.delete-btn').addEventListener('click', (e) => {
+          e.stopPropagation();
+          deleteUserFile(name);
+        });
+        if (existingInput) {
+          container.insertBefore(row, existingInput);
+        } else {
+          container.appendChild(row);
+        }
+      }
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ── Delete a user file ──
+    function deleteUserFile(name) {
+      if (!confirm(`Delete "${name}"?`)) return;
+      delete userFiles[name];
+      saveUserFiles();
+      if (currentFile?.type === 'user' && currentFile.key === name) {
+        currentFile = null;
+        editor.setValue('', -1);
+      }
+      renderMyFiles();
+    }
+
+    // ── New file: show inline input ──
+    document.getElementById('new-file-btn').addEventListener('click', (e) => {
+      e.stopPropagation(); // don't toggle folder collapse
+      const container = document.getElementById('myfiles-content');
+      if (container.querySelector('.new-file-row')) return; // already open
+
+      // Expand if collapsed
+      container.classList.remove('collapsed');
+      document.getElementById('myfiles-header').classList.remove('collapsed');
+
+      const row = document.createElement('div');
+      row.className = 'new-file-row';
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'new-file-input';
+      input.placeholder = 'filename.js';
+      row.appendChild(input);
+      container.appendChild(row);
+      input.focus();
+
+      function commit() {
+        let name = input.value.trim();
+        row.remove();
+        if (!name) return;
+        if (!name.endsWith('.js')) name += '.js';
+        if (userFiles[name] === undefined) {
+          userFiles[name] = '';
+          saveUserFiles();
+        }
+        openUserFile(name);
+      }
+
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter')  commit();
+        if (e.key === 'Escape') row.remove();
+      });
+      input.addEventListener('blur', () => {
+        // slight delay so click-outside doesn't fire before commit on Enter
+        setTimeout(() => { if (row.parentNode) row.remove(); }, 150);
+      });
+    });
+
+    // ── Folder collapse toggles ──
+    document.getElementById('examples-header').addEventListener('click', () => {
+      document.getElementById('examples-header').classList.toggle('collapsed');
+      document.getElementById('examples-content').classList.toggle('collapsed');
+    });
+
+    document.getElementById('myfiles-header').addEventListener('click', (e) => {
+      // Don't collapse when clicking the + button
+      if (e.target.closest('.folder-actions')) return;
+      document.getElementById('myfiles-header').classList.toggle('collapsed');
+      document.getElementById('myfiles-content').classList.toggle('collapsed');
+    });
+
+    // ── Initial render ──
+    renderExamples();
+    renderMyFiles();
+    openExample("examples/001-hello-world.js"); 
 
     // ── Play button ──
     const playBtn       = document.getElementById('play-btn');
@@ -145,16 +312,16 @@ ${userCode}
       runnerOverlay.classList.remove('hidden');
     });
 
-    closeBtn.addEventListener('click', () => {
+    function closeRunner() {
       runnerOverlay.classList.add('hidden');
       runnerFrame.srcdoc = '';
-    });
+    }
 
-    // ── Keyboard shortcut: Escape closes runner ──
+    closeBtn.addEventListener('click', closeRunner);
+
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && !runnerOverlay.classList.contains('hidden')) {
-        runnerOverlay.classList.add('hidden');
-        runnerFrame.srcdoc = '';
+        closeRunner();
       }
     });
   </script>
