@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NSDraw</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body style="display:flex;flex-direction:column;height:100vh;">
+
+  <!-- Toolbar -->
+  <div id="toolbar">
+    <span class="logo">NSDraw</span>
+    <select id="examples-menu">
+      <option value="">— Examples —</option>
+      <option value="examples/circles.js">Bouncing Circles</option>
+      <option value="examples/clock.js">Analog Clock</option>
+      <option value="examples/grid.js">Color Grid</option>
+      <option value="examples/tree.js">Fractal Tree</option>
+    </select>
+    <button id="play-btn">▶ Run</button>
+  </div>
+
+  <!-- Editor -->
+  <div id="editor-pane">
+    <div id="ace-editor"></div>
+  </div>
+
+  <!-- Runner overlay -->
+  <div id="runner-overlay" class="hidden">
+    <button id="close-btn">✕ Close</button>
+    <iframe id="runner-frame" sandbox="allow-scripts"></iframe>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.0/ace.js"></script>
+  <script>
+    // ── Ace editor setup ──
+    const editor = ace.edit('ace-editor');
+    editor.setTheme('ace/theme/monokai');
+    editor.session.setMode('ace/mode/javascript');
+    editor.setOptions({
+      fontSize: '14px',
+      showPrintMargin: false,
+      tabSize: 2,
+      useSoftTabs: true,
+    });
+
+    const DEFAULT_CODE = `// Welcome to NSDraw!
+// Use the canvas drawing functions below, then hit ▶ Run.
+//
+// Globals available:
+//   canvas, ctx, W (width), H (height)
+//
+// Functions:
+//   clear({ color })
+//   draw_circle({ x, y, r, fill, stroke, lineWidth })
+//   draw_rect({ x, y, w, h, fill, stroke, lineWidth })
+//   draw_line({ x1, y1, x2, y2, color, lineWidth })
+//   draw_text({ text, x, y, font, fill, align })
+//   draw_poly({ points, fill, stroke, lineWidth })
+//   loop(fn)  — calls fn(dt) every frame (dt = ms since last frame)
+
+clear({ color: '#1e1e2e' });
+
+draw_circle({ x: W / 2, y: H / 2, r: 80, fill: '#cba6f7' });
+
+draw_text({
+  text: 'Hello, NSDraw!',
+  x: W / 2,
+  y: H / 2 + 120,
+  font: 'bold 24px monospace',
+  fill: '#cdd6f4',
+  align: 'center',
+});
+`;
+
+    editor.setValue(DEFAULT_CODE, -1);
+
+    // ── NSDraw library source (fetched once) ──
+    let nsdrawSrc = '';
+    fetch('nsdraw.js')
+      .then(r => r.text())
+      .then(src => { nsdrawSrc = src; });
+
+    // ── Examples menu ──
+    const examplesMenu = document.getElementById('examples-menu');
+    examplesMenu.addEventListener('change', async () => {
+      const path = examplesMenu.value;
+      if (!path) return;
+      const src = await fetch(path).then(r => r.text());
+      editor.setValue(src, -1);
+      examplesMenu.value = '';
+    });
+
+    // ── Play button ──
+    const playBtn       = document.getElementById('play-btn');
+    const runnerOverlay = document.getElementById('runner-overlay');
+    const runnerFrame   = document.getElementById('runner-frame');
+    const closeBtn      = document.getElementById('close-btn');
+
+    playBtn.addEventListener('click', () => {
+      const userCode = editor.getValue();
+
+      const doc = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #000; overflow: hidden; }
+  canvas { display: block; }
+  #error-bar {
+    display: none;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: #f38ba8;
+    color: #1e1e2e;
+    padding: 8px 12px;
+    font-family: monospace;
+    font-size: 13px;
+    z-index: 999;
+  }
+</style>
+</head>
+<body>
+<canvas id="nsdraw-canvas"></canvas>
+<div id="error-bar"></div>
+<script>
+window.onerror = function(msg, _src, line) {
+  const bar = document.getElementById('error-bar');
+  bar.style.display = 'block';
+  bar.textContent = 'Error (line ' + line + '): ' + msg;
+};
+<\/script>
+<script>
+${nsdrawSrc}
+<\/script>
+<script>
+${userCode}
+<\/script>
+</body>
+</html>`;
+
+      runnerFrame.srcdoc = doc;
+      runnerOverlay.classList.remove('hidden');
+    });
+
+    closeBtn.addEventListener('click', () => {
+      runnerOverlay.classList.add('hidden');
+      runnerFrame.srcdoc = '';
+    });
+
+    // ── Keyboard shortcut: Escape closes runner ──
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !runnerOverlay.classList.contains('hidden')) {
+        runnerOverlay.classList.add('hidden');
+        runnerFrame.srcdoc = '';
+      }
+    });
+  </script>
+</body>
+</html>
