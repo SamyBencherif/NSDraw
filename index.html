@@ -275,9 +275,48 @@ Math.max(a, b)</pre>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.0/ace.js"></script>
   <script>
+    // ── Custom Catppuccin Mocha theme for Ace ──
+    (function() {
+      const dom = ace.require('ace/lib/dom');
+      ace.define('ace/theme/nsdraw', ['require','exports','module','ace/lib/dom'], function(require, exports, module) {
+        exports.isDark = true;
+        exports.cssClass = 'ace-nsdraw';
+        exports.cssText = `
+.ace-nsdraw .ace_gutter                { background:#181825; color:#45475a; }
+.ace-nsdraw .ace_gutter-active-line    { background:#1e1e2e; color:#6c7086; }
+.ace-nsdraw                            { background:#1e1e2e; color:#cdd6f4; }
+.ace-nsdraw .ace_cursor                { color:#f5e0dc; }
+.ace-nsdraw .ace_marker-layer .ace_selection { background:#313244; }
+.ace-nsdraw .ace_marker-layer .ace_active-line { background:#181825; }
+.ace-nsdraw .ace_marker-layer .ace_bracket { border:1px solid #6c7086; }
+.ace-nsdraw .ace_print-margin         { width:1px; background:#313244; }
+.ace-nsdraw .ace_indent-guide         { background:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgbYnAAAAEklEQVQImWNgYGBg+M/AAAACAAEABgADIgAAAABJRU5ErkJggg==") right repeat-y; }
+
+.ace-nsdraw .ace_comment    { color:#6c7086; font-style:normal; }
+.ace-nsdraw .ace_string     { color:#a6e3a1; }
+.ace-nsdraw .ace_numeric    { color:#fab387; }
+.ace-nsdraw .ace_keyword    { color:#cba6f7; }
+.ace-nsdraw .ace_operator   { color:#89dceb; }
+.ace-nsdraw .ace_identifier { color:#cdd6f4; }
+.ace-nsdraw .ace_variable   { color:#cdd6f4; }
+.ace-nsdraw .ace_support.ace_function  { color:#89b4fa; }
+.ace-nsdraw .ace_support.ace_class     { color:#f9e2af; }
+.ace-nsdraw .ace_entity.ace_name.ace_function { color:#89b4fa; }
+.ace-nsdraw .ace_storage    { color:#cba6f7; }
+.ace-nsdraw .ace_constant   { color:#fab387; }
+.ace-nsdraw .ace_constant.ace_language { color:#fab387; }
+.ace-nsdraw .ace_punctuation { color:#89dceb; }
+.ace-nsdraw .ace_paren      { color:#89dceb; }
+.ace-nsdraw .ace_invisible  { color:#313244; }
+        `;
+        dom.importCssString(exports.cssText, exports.cssClass);
+      });
+    })();
+  </script>
+  <script>
     // ── Ace editor setup ──
     const editor = ace.edit('ace-editor');
-    editor.setTheme('ace/theme/monokai');
+    editor.setTheme('ace/theme/nsdraw');
     editor.session.setMode('ace/mode/javascript');
     editor.setOptions({
       fontSize: '14px',
