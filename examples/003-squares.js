@@ -20,7 +20,7 @@ draw_rect({ x: 230, y: 10, w: 100, h: 100, fill: "blue" });
 
 // We are calling a new function!
 // draw_rect draws rectangles.
-// draw_rect({ x: 10, y: 10, ... });
+// draw_rect({ x: 10, y: 10, w: 100, h: 100, fill: "red" });
 // Like before, we're starting with
 // the function name, passing in an
 // object, and defining keys and

@@ -10,8 +10,9 @@ loop(() => {
 // Explanation:
 
 // We clear the background outside of
-// the loop. So the screen is set to
-// #B8DDDE, which is a light blue.
+// the loop. So the screen is set once 
+// at the beginning to #B8DDDE, which 
+// is a light blue.
 
 // Then we draw a square at the mouse
 // position continuously, every frame,

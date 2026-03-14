@@ -1,11 +1,12 @@
 // Compare this with the previous
 // program. What's different?
+
 loop(() => {
     clear({color: "#B8DDDE11"});
     draw_rect({x: mx-20, y: my-20, w: 40, h: 40, fill: "#F54227"})
 })
 
-// Don't just look at the code. Run
+// Don't forget you can also run
 // it and examine the visual
 // difference.
 
@@ -87,7 +88,7 @@ loop(() => {
 // All are maxed out at 0xFF (255).
 
 // What happens when you fully mix
-// red, green, and blue light?
+// red, green, and blue?
 
 // Hint: try color: "#FFFFFF" in
 // 001-hello-world.js and run it.

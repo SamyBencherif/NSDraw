@@ -48,8 +48,8 @@ loop(() => {
 // line, separated by a semicolon.
 // People will tell you not to do
 // that in programming, because it's
-// hard to read, but we're just
-// having fun here.
+// hard to read, but actually you 
+// can do whatever you want.
 
 // The second part x_position%=W;
 // means that whenever x_position is
