@@ -328,6 +328,9 @@ ${userCode}
     closeBtn.addEventListener('click', closeRunner);
 
     document.addEventListener('keydown', (e) => {
+      if (e.key === 's' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+      }
       if (e.key === 'Escape' && !runnerOverlay.classList.contains('hidden')) {
         closeRunner();
       }
