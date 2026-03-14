@@ -69,11 +69,200 @@
         </div>
       </div>
 
+      <!-- Docs link — pinned to bottom of sidebar -->
+      <div id="docs-link-area">
+        <button id="docs-header">docs</button>
+      </div>
+
     </div>
 
     <!-- Editor -->
     <div id="editor-pane">
       <div id="ace-editor"></div>
+    </div>
+
+    <!-- Docs pane -->
+    <div id="docs-pane" class="hidden">
+      <div id="docs-toolbar">
+        <span>Docs</span>
+        <button id="docs-close-btn" title="Close docs">✕ Close</button>
+      </div>
+      <div id="docs-inner">
+
+        <div class="docs-section">
+          <div class="docs-section-title">Variables</div>
+          <div class="docs-entry">
+            <code>W</code>
+            <span>Canvas width in pixels.</span>
+          </div>
+          <div class="docs-entry">
+            <code>H</code>
+            <span>Canvas height in pixels.</span>
+          </div>
+          <div class="docs-entry">
+            <code>mx</code>
+            <span>Mouse / touch X position.</span>
+          </div>
+          <div class="docs-entry">
+            <code>my</code>
+            <span>Mouse / touch Y position.</span>
+          </div>
+        </div>
+
+        <div class="docs-section">
+          <div class="docs-section-title">Functions</div>
+
+          <div class="docs-entry">
+            <code>clear({ color })</code>
+            <span>Fill the whole canvas with <em>color</em>. Default: <code>"#000000"</code>.</span>
+            <pre>clear({ color: "navy" });</pre>
+          </div>
+
+          <div class="docs-entry">
+            <code>draw_rect({ x, y, w, h, fill, stroke, lineWidth })</code>
+            <span>Draw a rectangle. <em>x, y</em> are the top-left corner.</span>
+            <pre>draw_rect({
+  x: 10, y: 10,
+  w: 100, h: 50,
+  fill: "red",
+});</pre>
+          </div>
+
+          <div class="docs-entry">
+            <code>draw_circle({ x, y, r, fill, stroke, lineWidth })</code>
+            <span>Draw a circle centered at <em>x, y</em> with radius <em>r</em>.</span>
+            <pre>draw_circle({
+  x: 200, y: 200,
+  r: 40,
+  fill: "gold",
+  stroke: "white",
+  lineWidth: 2,
+});</pre>
+          </div>
+
+          <div class="docs-entry">
+            <code>draw_line({ x1, y1, x2, y2, color, lineWidth })</code>
+            <span>Draw a line from <em>(x1, y1)</em> to <em>(x2, y2)</em>.</span>
+            <pre>draw_line({
+  x1: 0,   y1: 0,
+  x2: 100, y2: 100,
+  color: "cyan",
+  lineWidth: 3,
+});</pre>
+          </div>
+
+          <div class="docs-entry">
+            <code>draw_text({ text, x, y, font, fill, align })</code>
+            <span>Draw text at <em>x, y</em>. <em>align</em> can be <code>"left"</code>, <code>"center"</code>, or <code>"right"</code>.</span>
+            <pre>draw_text({
+  text: "Hello!",
+  x: W/2, y: H/2,
+  font: "32px monospace",
+  fill: "white",
+  align: "center",
+});</pre>
+          </div>
+
+          <div class="docs-entry">
+            <code>draw_poly({ points, fill, stroke, lineWidth })</code>
+            <span>Draw a closed polygon. <em>points</em> is an array of <code>{ x, y }</code> objects.</span>
+            <pre>draw_poly({
+  points: [
+    { x: 100, y: 50  },
+    { x: 150, y: 150 },
+    { x: 50,  y: 150 },
+  ],
+  fill: "orchid",
+});</pre>
+          </div>
+
+          <div class="docs-entry">
+            <code>loop(fn)</code>
+            <span>Call <em>fn</em> every animation frame. <em>fn</em> receives <code>dt</code> — milliseconds since the last frame.</span>
+            <pre>loop((dt) => {
+  clear({ color: "#111" });
+  draw_circle({ x: mx, y: my, r: 20 });
+});</pre>
+          </div>
+        </div>
+
+        <div class="docs-section">
+          <div class="docs-section-title">JS Basics</div>
+
+          <div class="docs-entry">
+            <code>// comment</code>
+            <span>Lines starting with <code>//</code> are ignored by the computer. Use them for notes.</span>
+          </div>
+
+          <div class="docs-entry">
+            <code>let name = value;</code>
+            <span>Create a variable and give it a value. You can change it later.</span>
+            <pre>let x = 0;
+x = x + 1; // now x is 1
+x++;        // shorthand for +1</pre>
+          </div>
+
+          <div class="docs-entry">
+            <code>const name = value;</code>
+            <span>Like <code>let</code>, but the variable cannot be reassigned.</span>
+            <pre>const PI = 3.14159;</pre>
+          </div>
+
+          <div class="docs-entry">
+            <code>if / else</code>
+            <span>Run code only when a condition is true.</span>
+            <pre>if (x > 100) {
+  x = 0;
+} else {
+  x++;
+}</pre>
+          </div>
+
+          <div class="docs-entry">
+            <code>for loop</code>
+            <span>Repeat code a set number of times.</span>
+            <pre>for (let i = 0; i &lt; 10; i++) {
+  draw_circle({
+    x: i * 50, y: 100, r: 20,
+  });
+}</pre>
+          </div>
+
+          <div class="docs-entry">
+            <code>function</code>
+            <span>Define reusable blocks of code.</span>
+            <pre>function greet(name) {
+  draw_text({
+    text: "Hi " + name,
+    x: 50, y: 50,
+  });
+}
+greet("world");</pre>
+          </div>
+
+          <div class="docs-entry">
+            <code>Math</code>
+            <span>Built-in math utilities.</span>
+            <pre>Math.random()    // 0 to 1
+Math.floor(3.7)  // 3
+Math.sin(angle)  // sine
+Math.cos(angle)  // cosine
+Math.PI          // 3.14159…
+Math.min(a, b)
+Math.max(a, b)</pre>
+          </div>
+
+          <div class="docs-entry">
+            <code>Colors</code>
+            <span>Any CSS color works: names, hex codes, hsl, or rgba.</span>
+            <pre>"red"
+"#FF4500"
+"hsl(200, 80%, 60%)"
+"rgba(255, 0, 0, 0.5)"</pre>
+          </div>
+
+        </div>
+      </div>
     </div>
 
   </div>
@@ -189,6 +378,7 @@
 
     // ── Open any file ──
     function openFile(key) {
+      hideDocs();
       if (isExample(key)) {
         fetch(key).then(r => r.text()).then(src => {
           currentKey = key;
@@ -307,6 +497,28 @@
       document.getElementById('examples-header').classList.toggle('collapsed');
       document.getElementById('examples-content').classList.toggle('collapsed');
     });
+
+    // ── Docs pane ──
+    const docsPaneEl = document.getElementById('docs-pane');
+    const docsHeaderEl = document.getElementById('docs-header');
+
+    function showDocs() {
+      document.getElementById('editor-pane').classList.add('hidden');
+      docsPaneEl.classList.remove('hidden');
+      currentKey = null;
+      // Highlight docs row, clear file highlights
+      document.querySelectorAll('.tree-file.active').forEach(el => el.classList.remove('active'));
+      docsHeaderEl.classList.add('active');
+      if (isMobile()) closeSidebar();
+    }
+    function hideDocs() {
+      docsPaneEl.classList.add('hidden');
+      document.getElementById('editor-pane').classList.remove('hidden');
+      docsHeaderEl.classList.remove('active');
+    }
+
+    document.getElementById('docs-header').addEventListener('click', showDocs);
+    document.getElementById('docs-close-btn').addEventListener('click', hideDocs);
 
     document.getElementById('myfiles-header').addEventListener('click', (e) => {
       if (e.target.closest('.folder-actions')) return;
