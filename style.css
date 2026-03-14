@@ -170,8 +170,8 @@ html, body {
   white-space: nowrap;
 }
 
-.tree-file .delete-btn {
-  display: none;
+.tree-file .delete-btn,
+.tree-file .download-btn {
   flex-shrink: 0;
   background: none;
   border: none;
@@ -183,12 +183,20 @@ html, body {
   line-height: 1;
 }
 
-.tree-file:hover .delete-btn {
+.tree-file .download-btn {
+  display: none;
+}
+
+.tree-file:hover .download-btn {
   display: block;
 }
 
 .tree-file .delete-btn:hover {
   color: #f38ba8;
+}
+
+.tree-file .download-btn:hover {
+  color: #89b4fa;
 }
 
 /* Inline new-file input */
