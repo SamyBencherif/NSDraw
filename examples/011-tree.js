@@ -1,5 +1,8 @@
 // Fractal Tree
 
+// I haven't annotated this example yet. Check back later)
+
+
 function branch(x1, y1, angle, length, depth) {
   if (depth === 0 || length < 2) return;
 

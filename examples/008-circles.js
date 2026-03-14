@@ -1,5 +1,7 @@
 // Bouncing Circles — animated example
 
+// I haven't annotated this example yet. Check back later)
+
 const NUM = 30;
 const circles = [];
 

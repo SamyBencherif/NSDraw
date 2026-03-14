@@ -1,5 +1,8 @@
 // Analog Clock
 
+// I haven't annotated this example yet. Check back later)
+
+
 const TAU = Math.PI * 2;
 
 function hand(angle, length, width, color) {
