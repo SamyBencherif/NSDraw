@@ -1,6 +1,7 @@
-// Color Grid — static drawing example
+// Color Grid — static drawing
 
-// I haven't annotated this example yet. Check back later)
+// Not annotated yet. Check back
+// later!
 
 const COLS = 20;
 const ROWS = 14;

@@ -1,6 +1,7 @@
-// Bouncing Circles — animated example
+// Bouncing Circles
 
-// I haven't annotated this example yet. Check back later)
+// Not annotated yet. Check back
+// later!
 
 const NUM = 30;
 const circles = [];
