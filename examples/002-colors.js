@@ -17,8 +17,8 @@ clear({ color: "gray" });
 
 // The colors are a little basic.
 // Maybe even a bit ugly. Check out
-// https://en.wikipedia.org/wiki/
-// Web_colors for a more complete list
+// https://en.wikipedia.org/wiki/Web_colors 
+// for a more complete list
 // of color names. There are some
 // unique ones, such as:
 //   Peru Turquoise CornflowerBlue
