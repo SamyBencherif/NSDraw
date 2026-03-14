@@ -31,7 +31,7 @@
 // Try changing the color from
 // "magenta" to "white".
 // Press the [ ▶ Run ] button in the
-// top left corner to see the program
+// top right corner to see the program
 // in action.
 clear({ color: "magenta" });
 
