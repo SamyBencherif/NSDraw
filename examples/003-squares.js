@@ -28,7 +28,7 @@ draw_rect({ x: 230, y: 10, w: 100, h: 100, fill: "blue" });
 
 // 1. Try moving the red square to
 //    the right, by changing its x
-//    value to 400. (hint: line 6)
+//    value to 400. (hint: line 7)
 // 2. Now move it down by changing
 //    the y value to 300.
 // 3. Change the color to whatever
