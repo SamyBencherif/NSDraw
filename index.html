@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>NSDraw</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -27,9 +30,13 @@
 
   <!-- Toolbar -->
   <div id="toolbar">
+    <button id="sidebar-toggle" aria-label="Toggle sidebar">☰</button>
     <span class="logo">NSDraw</span>
     <button id="play-btn">▶ Run</button>
   </div>
+
+  <!-- Sidebar backdrop (mobile) -->
+  <div id="sidebar-backdrop"></div>
 
   <!-- Main -->
   <div id="main">
@@ -146,6 +153,39 @@
       return row;
     }
 
+    // ── Sidebar toggle ──
+    const sidebarEl   = document.getElementById('sidebar');
+    const backdropEl  = document.getElementById('sidebar-backdrop');
+    const toggleBtn   = document.getElementById('sidebar-toggle');
+
+    function isMobile() { return window.innerWidth < 640; }
+
+    function openSidebar() {
+      if (isMobile()) {
+        sidebarEl.classList.add('open');
+        backdropEl.classList.add('visible');
+      } else {
+        sidebarEl.classList.remove('closed');
+      }
+    }
+    function closeSidebar() {
+      if (isMobile()) {
+        sidebarEl.classList.remove('open');
+        backdropEl.classList.remove('visible');
+      } else {
+        sidebarEl.classList.add('closed');
+      }
+    }
+    function toggleSidebar() {
+      const isOpen = isMobile()
+        ? sidebarEl.classList.contains('open')
+        : !sidebarEl.classList.contains('closed');
+      isOpen ? closeSidebar() : openSidebar();
+    }
+
+    toggleBtn.addEventListener('click', toggleSidebar);
+    backdropEl.addEventListener('click', closeSidebar);
+
     // ── Open any file ──
     function openFile(key) {
       if (isExample(key)) {
@@ -153,11 +193,13 @@
           currentKey = key;
           editor.setValue(src, -1);
           renderSidebar();
+          if (isMobile()) closeSidebar();
         });
       } else {
         currentKey = key;
         editor.setValue(userFiles[key] ?? '', -1);
         renderSidebar();
+        if (isMobile()) closeSidebar();
       }
     }
 

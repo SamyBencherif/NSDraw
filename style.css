@@ -12,6 +12,16 @@ html, body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  /* Safe-area insets for iPhone notch / home bar */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Suppress iOS tap highlight */
+* {
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* ── Toolbar ── */
@@ -21,10 +31,29 @@ html, body {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 0 16px;
+  padding: 0 12px;
   background: #181825;
   border-bottom: 1px solid #313244;
   flex-shrink: 0;
+  touch-action: none;
+}
+
+#sidebar-toggle {
+  background: none;
+  border: none;
+  color: #a6adc8;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+#sidebar-toggle:hover,
+#sidebar-toggle:active {
+  background: #313244;
+  color: #cdd6f4;
 }
 
 .logo {
@@ -41,14 +70,17 @@ html, body {
   color: #1e1e2e;
   border: none;
   border-radius: 4px;
-  padding: 6px 18px;
+  padding: 8px 18px;
   font-size: 0.9rem;
   font-weight: bold;
   cursor: pointer;
   transition: background 0.15s;
+  /* Larger touch target on mobile */
+  min-height: 36px;
 }
 
-#play-btn:hover {
+#play-btn:hover,
+#play-btn:active {
   background: #94e2d5;
 }
 
@@ -58,6 +90,21 @@ html, body {
   flex: 1;
   display: flex;
   overflow: hidden;
+  position: relative;
+}
+
+/* ── Sidebar backdrop (mobile overlay) ── */
+
+#sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 49;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+#sidebar-backdrop.visible {
+  display: block;
 }
 
 /* ── Sidebar ── */
@@ -72,6 +119,53 @@ html, body {
   display: flex;
   flex-direction: column;
   user-select: none;
+  /* Smooth collapse on desktop */
+  transition: width 0.2s ease, opacity 0.2s ease;
+}
+
+/* Desktop collapsed state */
+#sidebar.closed {
+  width: 0;
+  opacity: 0;
+  pointer-events: none;
+  border-right: none;
+}
+
+/* On mobile the sidebar slides over the editor */
+@media (max-width: 639px) {
+  #sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    /* Account for toolbar */
+    padding-top: calc(48px + env(safe-area-inset-top));
+    z-index: 50;
+    width: 80vw;
+    max-width: 300px;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    /* Reset desktop collapse behaviour */
+    opacity: 1;
+    pointer-events: auto;
+    border-right: 1px solid #313244;
+  }
+
+  #sidebar.open {
+    transform: translateX(0);
+  }
+
+  /* Editor always full width on mobile */
+  #editor-pane {
+    width: 100%;
+  }
+}
+
+/* Desktop: sidebar starts open */
+@media (min-width: 640px) {
+  #sidebar {
+    /* open by default, JS adds .closed to collapse */
+  }
 }
 
 .tree-section {
@@ -82,13 +176,14 @@ html, body {
   display: flex;
   align-items: center;
   gap: 5px;
-  padding: 5px 10px;
+  padding: 8px 10px;
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: #6c7086;
   cursor: pointer;
+  min-height: 36px;
 }
 
 .tree-folder-header:hover {
@@ -118,11 +213,17 @@ html, body {
   font-size: 1rem;
   line-height: 1;
   cursor: pointer;
-  padding: 0 2px;
+  padding: 4px 6px;
   border-radius: 3px;
+  min-width: 28px;
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.folder-action-btn:hover {
+.folder-action-btn:hover,
+.folder-action-btn:active {
   color: #cdd6f4;
   background: #313244;
 }
@@ -139,12 +240,13 @@ html, body {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 10px 4px 22px;
+  padding: 6px 10px 6px 22px;
   font-size: 0.85rem;
   color: #a6adc8;
   cursor: pointer;
   border-radius: 0;
   position: relative;
+  min-height: 36px;
 }
 
 .tree-file:hover {
@@ -178,9 +280,14 @@ html, body {
   color: #6c7086;
   font-size: 0.9rem;
   cursor: pointer;
-  padding: 0 2px;
+  padding: 4px 5px;
   border-radius: 3px;
   line-height: 1;
+  min-width: 24px;
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .tree-file .download-btn {
@@ -188,14 +295,16 @@ html, body {
 }
 
 .tree-file:hover .download-btn {
-  display: block;
+  display: flex;
 }
 
-.tree-file .delete-btn:hover {
+.tree-file .delete-btn:hover,
+.tree-file .delete-btn:active {
   color: #f38ba8;
 }
 
-.tree-file .download-btn:hover {
+.tree-file .download-btn:hover,
+.tree-file .download-btn:active {
   color: #89b4fa;
 }
 
@@ -214,9 +323,11 @@ html, body {
   border-radius: 3px;
   color: #cdd6f4;
   font-size: 0.85rem;
-  padding: 2px 6px;
+  padding: 4px 6px;
   outline: none;
   font-family: monospace;
+  /* Prevent iOS zoom on focus */
+  font-size: 16px;
 }
 
 /* ── Editor pane ── */
@@ -226,6 +337,7 @@ html, body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 #ace-editor {
@@ -255,19 +367,21 @@ html, body {
 
 #close-btn {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: max(12px, env(safe-area-inset-top));
+  right: max(12px, env(safe-area-inset-right));
   z-index: 101;
   background: rgba(0, 0, 0, 0.65);
   color: #cdd6f4;
   border: 1px solid #555;
   border-radius: 4px;
-  padding: 5px 12px;
-  font-size: 0.85rem;
+  padding: 8px 14px;
+  font-size: 0.9rem;
   cursor: pointer;
   transition: background 0.15s;
+  min-height: 36px;
 }
 
-#close-btn:hover {
+#close-btn:hover,
+#close-btn:active {
   background: rgba(80, 80, 80, 0.8);
 }

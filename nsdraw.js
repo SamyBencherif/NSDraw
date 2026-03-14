@@ -15,6 +15,11 @@ function resizeCanvas() {
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
 
+// --- Mouse position ---
+
+let mx = 0, my = 0;
+window.addEventListener('mousemove', (e) => { mx = e.clientX; my = e.clientY; });
+
 // --- Drawing functions ---
 
 function clear({ color = '#000000' } = {}) {
