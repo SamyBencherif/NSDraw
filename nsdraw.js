@@ -15,10 +15,18 @@ function resizeCanvas() {
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
 
-// --- Mouse position ---
+// --- Mouse / touch position ---
 
 let mx = 0, my = 0;
 window.addEventListener('mousemove', (e) => { mx = e.clientX; my = e.clientY; });
+window.addEventListener('touchmove', (e) => {
+  const t = e.touches[0];
+  mx = t.clientX; my = t.clientY;
+}, { passive: true });
+window.addEventListener('touchstart', (e) => {
+  const t = e.touches[0];
+  mx = t.clientX; my = t.clientY;
+}, { passive: true });
 
 // --- Drawing functions ---
 
