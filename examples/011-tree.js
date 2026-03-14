@@ -1,7 +1,7 @@
 // Fractal Tree
 
 // Not annotated yet. Check back
-// later!
+// later)
 
 function branch(x1, y1, angle, length, depth) {
   if (depth === 0 || length < 2) return;

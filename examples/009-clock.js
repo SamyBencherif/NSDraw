@@ -1,7 +1,7 @@
 // Analog Clock
 
 // Not annotated yet. Check back
-// later!
+// later)
 
 const TAU = Math.PI * 2;
 

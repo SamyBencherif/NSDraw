@@ -1,7 +1,7 @@
 // Color Grid — static drawing
 
 // Not annotated yet. Check back
-// later!
+// later)
 
 const COLS = 20;
 const ROWS = 14;

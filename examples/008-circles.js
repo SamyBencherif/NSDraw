@@ -1,7 +1,7 @@
 // Bouncing Circles
 
 // Not annotated yet. Check back
-// later!
+// later)
 
 const NUM = 30;
 const circles = [];
