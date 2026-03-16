@@ -17,7 +17,22 @@ window.addEventListener('resize', resizeCanvas);
 
 // --- Mouse / touch position ---
 
-let mx = 0, my = 0;
+let mx = 0, my = 0, md = 0;
+
+const prev_frame = {};
+
+function mouse_down_this_frame()
+{
+  return md && !prev_frame['md'];
+}
+
+function mouse_up_this_frame()
+{
+  return !md && prev_frame['md'];
+}
+
+window.addEventListener('mousedown', (e) => { md = 1; });
+window.addEventListener('mouseup', (e) => { md = 0; });
 window.addEventListener('mousemove', (e) => { mx = e.clientX; my = e.clientY; });
 window.addEventListener('touchmove', (e) => {
   const t = e.touches[0];
@@ -26,7 +41,9 @@ window.addEventListener('touchmove', (e) => {
 window.addEventListener('touchstart', (e) => {
   const t = e.touches[0];
   mx = t.clientX; my = t.clientY;
+  md = 1;
 }, { passive: true });
+window.addEventListener('touchend', (e) => { md = 0; });
 
 // --- Drawing functions ---
 
@@ -91,6 +108,11 @@ function loop(fn) {
     const dt = last ? ts - last : 0;
     last = ts;
     fn(dt);
+
+    prev_frame['md'] = md;
+    prev_frame['mx'] = mx;
+    prev_frame['my'] = my;
+
     requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);

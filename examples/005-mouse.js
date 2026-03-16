@@ -7,7 +7,7 @@ loop(() => {
 })
 
 // Run the program to see what
-// happens!
+// happens)
 
 // NSDraw comes with some special
 // variables. We used some of them
