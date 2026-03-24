@@ -15,6 +15,17 @@ function resizeCanvas() {
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
 
+// Tone.js wrapper
+
+const synth = new Tone.Synth().toDestination();
+
+function playNote(index)
+{
+  // C4 = MIDI 60
+  const note = Tone.Frequency(60 + index, "midi").toNote();
+  synth.triggerAttackRelease(note, "8n");
+}
+
 // --- Mouse / touch position ---
 
 let mx = 0, my = 0, md = 0;
