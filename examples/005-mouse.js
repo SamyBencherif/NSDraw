@@ -3,7 +3,7 @@
 
 loop(() => {
     clear({color: "#B8DDDE"});
-    draw_rect({x: mx-50, y: my-50, w: 100, h: 100, fill: "#F54227"})
+    draw_rect({x: mx-50, y: my-50, w: 100, h: 100, fill: "#F54227"});
 })
 
 // Run the program to see what
