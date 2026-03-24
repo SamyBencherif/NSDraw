@@ -9,6 +9,8 @@ class Button {
         this.height = height;
         this.color = color;
         this.index = index // the number of the note to play
+
+        this.animClock = 0;
     }
 
     hovering() {
@@ -16,6 +18,15 @@ class Button {
     }
 
     draw() {
+
+        if (this.animClock > 0)
+        {
+            let anim_size = this.width + (20-this.animClock);
+            draw_rect({ x: this.x - anim_size/2, y: this.y - anim_size/2, w: anim_size, h: anim_size, fill: `rgba(255,255,255,${this.animClock/20})` });
+
+            this.animClock -= .6;
+        }
+
         draw_rect({ x: this.x - this.width / 2, y: this.y - this.height / 2, w: this.width, h: this.height, fill: this.color });
         draw_text({ text: this.label, x: this.x, y: this.y, align: "center" });
 
@@ -24,6 +35,7 @@ class Button {
 
             if (mouse_down_this_frame()) {
                 playNote(this.index);
+                this.animClock = 20;
             }
 
         }
