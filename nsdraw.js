@@ -97,6 +97,7 @@ function draw_text({ text = '', x = 0, y = 0, font = '16px monospace', fill = 'w
   ctx.font = font;
   ctx.fillStyle = fill;
   ctx.textAlign = align;
+  ctx.textBaseline = "middle";
   ctx.fillText(text, x, y);
   ctx.restore();
 }
